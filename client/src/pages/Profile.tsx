@@ -1,16 +1,26 @@
-import { useState } from "react";
+import { useState, type SubmitEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import assets from "../assets/assets";
+import { useAuth } from "../context/AuthContext";
 
 function Profile() {
   const navigate = useNavigate();
+  const { authUser, updateProfile } = useAuth();
   const [selectedImg, setSelectedImg] = useState<File | null>(null);
-  const [name, setName] = useState("Martin Johnson");
-  const [bio, setBio] = useState("Hi Everyone, I am Using QuickChat");
+  const [name, setName] = useState(authUser?.fullname || "");
+  const [bio, setBio] = useState(authUser?.bio || "");
 
-  const onSubmitHandler = (e: React.FormEvent) => {
+  const onSubmitHandler = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // handle save
+
+    const formData = new FormData();
+    formData.append("fullName", name);
+    formData.append("bio", bio);
+    if (selectedImg) {
+      formData.append("profilePic", selectedImg);
+    }
+
+    await updateProfile(formData);
     navigate("/");
   };
 
@@ -18,7 +28,7 @@ function Profile() {
     <div className="min-h-screen w-full bg-black flex items-center justify-center relative overflow-hidden px-4">
       {/* glow background */}
       <div className="absolute top-0 right-1/4 w-150 h-150 bg-violet-700/40 rounded-full blur-[120px]"></div>
-      <div className="absolute bottom-0 left-1/4 w-125500px] bg-indigo-700/30 rounded-full blur-[120px]"></div>
+      <div className="absolute bottom-0 left-1/4 w-125 h-125 bg-indigo-700/30 rounded-full blur-[120px]"></div>
 
       <div className="relative z-10 flex flex-col md:flex-row items-center bg-[#0d0d12]/70 backdrop-blur-xl border border-gray-700 rounded-2xl overflow-hidden shadow-2xl max-w-3xl w-full">
         {/* Left form */}
@@ -43,7 +53,7 @@ function Profile() {
               src={
                 selectedImg
                   ? URL.createObjectURL(selectedImg)
-                  : assets.avatar_icon
+                  : authUser?.profilePic || assets.avatar_icon
               }
               alt="profile"
               className="w-14 h-14 rounded-full object-cover"
@@ -64,7 +74,6 @@ function Profile() {
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             placeholder="Write profile bio"
-            required
             rows={4}
             className="bg-transparent border border-violet-500 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 outline-none resize-y transition-colors"
           />
@@ -79,7 +88,6 @@ function Profile() {
 
         {/* Right image placeholder */}
         <div className="hidden md:flex flex-1 h-full items-center justify-center p-8 bg-white/5">
-          {/* TODO: replace with actual illustration/image */}
           <div className="w-full aspect-square max-w-70 rounded-2xl border-2 border-dashed border-gray-600 flex items-center justify-center text-gray-500 text-sm">
             Image placeholder
           </div>
