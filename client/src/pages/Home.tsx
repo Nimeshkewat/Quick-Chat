@@ -1,5 +1,5 @@
 import { useState } from "react";
-import ChatContinaer from "../components/ChatContinaer";
+import ChatContinaer from "../components/ChatContainer";
 import RightSidebar from "../components/RightSidebar";
 import Sidebar from "../components/Sidebar";
 
