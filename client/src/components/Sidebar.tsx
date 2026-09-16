@@ -1,6 +1,8 @@
 import type { Dispatch, SetStateAction } from "react";
-import assets, { userDummyData } from "../assets/assets";
+import assets from "../assets/assets";
 import { useNavigate } from "react-router-dom";
+import { useSidebarUsers } from "../hooks/useChat";
+import { useAuth } from "../context/AuthContext";
 
 type SidebarProps = {
   selectedUser: any;
@@ -9,6 +11,8 @@ type SidebarProps = {
 
 function Sidebar({ selectedUser, setSelectedUser }: SidebarProps) {
   const navigate = useNavigate();
+  const { data } = useSidebarUsers();
+  const { onlineUsers } = useAuth();
   return (
     <div
       className={`${
@@ -64,8 +68,8 @@ function Sidebar({ selectedUser, setSelectedUser }: SidebarProps) {
         </div>
 
         <div className="flex flex-col mt-4 gap-1">
-          {userDummyData.map((user, index) => {
-            const isOnline = index < 3;
+          {data?.users.map((user, index) => {
+            const isOnline = onlineUsers.includes(user._id);
             const isSelected = selectedUser?._id === user._id;
             return (
               <div
