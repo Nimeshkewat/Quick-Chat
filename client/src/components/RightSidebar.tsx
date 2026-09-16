@@ -1,12 +1,14 @@
 import assets, { imagesDummyData } from "../assets/assets";
+import { useAuth } from "../context/AuthContext";
 
 function RightSidebar({ selectedUser }: { selectedUser: any }) {
+  const { onlineUsers, logout } = useAuth();
+  const isOnline = selectedUser && onlineUsers.includes(selectedUser._id);
+
   return (
     selectedUser && (
       <div
-        className={`bg-[#0d0d12] text-white w-full h-full relative overflow-y-auto border-l border-gray-800 ${
-          selectedUser ? "max-md:hidden" : ""
-        }`}
+        className={`bg-[#0d0d12] text-white w-full h-full relative overflow-y-auto border-l border-gray-800 max-md:hidden`}
       >
         <div className="pt-10 flex flex-col items-center gap-2 text-xs font-light mx-auto">
           <img
@@ -15,7 +17,9 @@ function RightSidebar({ selectedUser }: { selectedUser: any }) {
             className="w-20 h-20 aspect-square rounded-full object-cover"
           />
           <h1 className="px-10 text-lg font-medium mx-auto flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-green-500"></span>
+            <span
+              className={`w-2 h-2 rounded-full ${isOnline ? "bg-green-500" : "bg-gray-500"}`}
+            ></span>
             {selectedUser?.fullName}
           </h1>
           <p className="px-10 mx-auto text-center text-gray-400">
@@ -45,7 +49,10 @@ function RightSidebar({ selectedUser }: { selectedUser: any }) {
         </div>
 
         <div className="p-5">
-          <button className="w-full bg-linear-to-r from-purple-500 to-violet-600 text-white border-none text-sm font-medium py-3 rounded-full cursor-pointer hover:opacity-90 transition-opacity">
+          <button
+            onClick={logout}
+            className="w-full bg-linear-to-r from-purple-500 to-violet-600 text-white border-none text-sm font-medium py-3 rounded-full cursor-pointer hover:opacity-90 transition-opacity"
+          >
             Logout
           </button>
         </div>
