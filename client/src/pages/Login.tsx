@@ -1,21 +1,45 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 function Login() {
+  const navigate = useNavigate();
+  const { register, login } = useAuth();
+
   const [currState, setCurrState] = useState<"Sign up" | "Login">("Sign up");
-  const [fullName, setFullName] = useState("");
+  const [fullname, setFullname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [agreed, setAgreed] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const onSubmitHandler = (e: React.FormEvent) => {
+  const onSubmitHandler = async (e: React.FormEvent) => {
     e.preventDefault();
-    // handle submit
+
+    if (currState === "Sign up" && !agreed) return;
+
+    setIsSubmitting(true);
+    try {
+      if (currState === "Sign up") {
+        const success = await register({ fullname, email, password });
+        if (success) {
+          // no auto-login on the backend, so send them to log in
+          setCurrState("Login");
+          setPassword("");
+        }
+      } else {
+        const success = await login({ email, password });
+        if (success) navigate("/");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="min-h-screen w-full bg-black flex items-center justify-center relative overflow-hidden px-4">
       {/* glow background */}
-      <div className="absolute top-0 left-1/4 w-150 h-150violet-700/40 rounded-full blur-[120px]"></div>
+      <div className="absolute top-0 left-1/4 w-1506h-150violet-700/40 rounded-full blur-[120px]"></div>
       <div className="absolute bottom-0 right-1/4 w-125 h-125 bg-indigo-700/30 rounded-full blur-[120px]"></div>
 
       <div className="relative z-10 flex flex-col md:flex-row items-center justify-center gap-16 md:gap-28 w-full max-w-5xl">
@@ -43,8 +67,8 @@ function Login() {
             <input
               type="text"
               placeholder="Full Name"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              value={fullname}
+              onChange={(e) => setFullname(e.target.value)}
               required
               className="bg-transparent border border-gray-600 rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-500 outline-none focus:border-violet-500 transition-colors"
             />
@@ -65,25 +89,33 @@ function Login() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            minLength={6}
             className="bg-transparent border border-gray-600 rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-500 outline-none focus:border-violet-500 transition-colors"
           />
 
           <button
             type="submit"
-            className="bg-linear-to-r from-purple-400 to-violet-600 text-white font-medium text-sm py-3 rounded-lg mt-1 hover:opacity-90 transition-opacity"
+            disabled={isSubmitting || (currState === "Sign up" && !agreed)}
+            className="bg-linear-to-r from-purple-400 to-violet-600 text-white font-medium text-sm py-3 rounded-lg mt-1 hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {currState === "Sign up" ? "Create Account" : "Login Now"}
+            {isSubmitting
+              ? "Please wait..."
+              : currState === "Sign up"
+                ? "Create Account"
+                : "Login Now"}
           </button>
 
-          <label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={agreed}
-              onChange={(e) => setAgreed(e.target.checked)}
-              className="accent-violet-600"
-            />
-            Agree to the terms of use &amp; privacy policy.
-          </label>
+          {currState === "Sign up" && (
+            <label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                className="accent-violet-600"
+              />
+              Agree to the terms of use &amp; privacy policy.
+            </label>
+          )}
 
           <div className="text-xs text-gray-500">
             {currState === "Sign up" ? (
